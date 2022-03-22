@@ -8,22 +8,66 @@ import {
   TouchableOpacity,
   Keyboard,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import Tasks from '../../components/Tasks';
+import {Insert, findMany, Delete, UserInsertMany} from '../../utils/database';
+
 const Home = () => {
   const [task, setTask] = useState('');
   const [taskItem, setTasItem] = useState([]);
 
-  const handleAddTask = () => {
+  useEffect(() => {
+    let task = [];
+    (async function fetchApi() {
+      await findMany('active_tasks')
+        .then(res => {
+          console.log('dff', res);
+          res.map(item => {
+            console.log(item);
+            task.push([item.task]);
+            setTasItem([...task]);
+          });
+        })
+        .catch(err => {
+          console.warn(err);
+          return null;
+        });
+    })();
+  }, []);
+
+  const handleAddTask = async () => {
     Keyboard.dismiss();
+    let taskr = [];
     setTasItem([...taskItem, task]);
+    await Insert('active_tasks', '(task)', [task])
+      .then(res => {
+        console.log(res);
+      })
+      .catch(err => {
+        console.warn('fetching error ', err);
+      });
     setTask('');
   };
-  const completeTask = index => {
+
+  const completeTask = async index => {
+    await Delete('active_tasks');
     let tasks = [...taskItem];
     tasks.splice(index, 1);
+    console.log(tasks);
     setTasItem(tasks);
+    //looping
+    for (let i = 0; i < tasks.length; i++) {
+      console.log(tasks[i].task);
+      await Insert('active_tasks', '(task)', [tasks[i]])
+        .then(res => {
+          console.log(res);
+        })
+        .catch(err => {
+          console.warn('fetching error ', err);
+        });
+    }
   };
+
   return (
     <View style={styles.container}>
       <View style={styles.tasksWrapper}>
