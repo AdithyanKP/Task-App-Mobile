@@ -1,2 +1,3 @@
 # Task-App-Mobile
-Mobile app using React-native
+### Introduction 
+Simple task management mobile app using react-native and Sqlite.
